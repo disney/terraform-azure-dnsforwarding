@@ -1,12 +1,12 @@
 locals {
-  nic_name         = "nic-${var.vmss_name}"
-  ip_config_name   = "ipcfg-${var.vmss_name}"
-  lb_name          = "lb-${var.vmss_name}"
-  asg_name         = "asg-${var.vmss_name}"
-  nsg_name         = "nsg-${var.vmss_name}"
-  nat_gw_name      = "nat-${var.vmss_name}"
-  nat_gw_ip_name   = "nat-pub-ip-${var.vmss_name}"
-  tags             = merge(var.common_tags, var.custom_tags)
+  nic_name       = "nic-${var.vmss_name}"
+  ip_config_name = "ipcfg-${var.vmss_name}"
+  lb_name        = "lb-${var.vmss_name}"
+  asg_name       = "asg-${var.vmss_name}"
+  nsg_name       = "nsg-${var.vmss_name}"
+  nat_gw_name    = "nat-${var.vmss_name}"
+  nat_gw_ip_name = "nat-pub-ip-${var.vmss_name}"
+  tags           = merge(var.common_tags, var.custom_tags)
 }
 
 resource "azurerm_resource_group" "dns_forwarding" {
@@ -81,10 +81,10 @@ resource "azurerm_linux_virtual_machine_scale_set" "dns_forwarding" {
   user_data = base64encode(templatefile(
     "${path.module}/templates/cloud-init.tmpl",
     {
-      vnet_cidr_block  = var.vnet_cidr,
-      dns_zones        = var.dns_zones,
-      querylog         = var.querylog,
-      frontend_ip      = var.load_balancer_static_ip
+      vnet_cidr_block = var.vnet_cidr,
+      dns_zones       = var.dns_zones,
+      querylog        = var.querylog,
+      frontend_ip     = var.load_balancer_static_ip
     }
     )
   )
@@ -152,13 +152,13 @@ resource "azurerm_lb" "dns_forwarding" {
 
   frontend_ip_configuration {
     # Standard SKU Load Balancer that do not specify a zone are zone redundant by default.
-      name                          = "lb-front-end-ip-${regex("[^.]*$", var.load_balancer_static_ip)}" # regex gets last octect of front end IP
-      private_ip_address            = var.load_balancer_static_ip
-      private_ip_address_allocation = "Static"
-      private_ip_address_version    = "IPv4"
-      subnet_id                     = var.lb_front_end_ip_subnet
-      availability_zone             = contains(local.availability_zones, var.vnet_location) ? "Zone-Redundant" : "No-Zone"
-    }
+    name                          = "lb-front-end-ip-${regex("[^.]*$", var.load_balancer_static_ip)}" # regex gets last octect of front end IP
+    private_ip_address            = var.load_balancer_static_ip
+    private_ip_address_allocation = "Static"
+    private_ip_address_version    = "IPv4"
+    subnet_id                     = var.lb_front_end_ip_subnet
+    availability_zone             = contains(local.availability_zones, var.vnet_location) ? "Zone-Redundant" : "No-Zone"
+  }
 
   tags = local.tags
 }
