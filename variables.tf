@@ -291,6 +291,12 @@ variable "vm_sku" {
   default     = "Standard_D2_v5"
 }
 
+variable "vmss_encryption_at_host_enabled" {
+  type        = bool
+  description = "Should all of the disks (including the temp disk) attached to this Virtual Machine be encrypted by enabling Encryption at Host. This has to be enabled at the individual subscription level, which is why it is false by default."
+  default     = false
+}
+
 variable "vmss_image_offer" {
   description = "Must be specified if var.custom_source_image is true. Specifies the offer of the image used to create the virtual machines"
   type        = string

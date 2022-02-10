@@ -17,13 +17,14 @@ resource "azurerm_resource_group" "dns_forwarding" {
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "dns_forwarding" {
-  name                = var.vmss_name
-  resource_group_name = azurerm_resource_group.dns_forwarding.name
-  location            = var.vnet_location
-  sku                 = var.vm_sku
-  instances           = var.quantity_of_instances
-  health_probe_id     = azurerm_lb_probe.dns_forwarding.id
-  source_image_id     = var.custom_source_image == false ? data.azurerm_shared_image_version.dmi_from_gallery.id : null
+  name                       = var.vmss_name
+  resource_group_name        = azurerm_resource_group.dns_forwarding.name
+  location                   = var.vnet_location
+  sku                        = var.vm_sku
+  instances                  = var.quantity_of_instances
+  health_probe_id            = azurerm_lb_probe.dns_forwarding.id
+  source_image_id            = var.custom_source_image == false ? data.azurerm_shared_image_version.dmi_from_gallery.id : null
+  encryption_at_host_enabled = true
 
   # Either admin_username & admin_password must be specified OR public_key & public_key_username must be specified
   admin_username                  = var.admin_username

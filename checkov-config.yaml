@@ -1,7 +1,3 @@
 skip-check:
-  # - CKV_AZURE_35 # Handled with a separate TF resource
-  # - CKV_AZURE_33 # Queue service not used
-  # - CKV_AZURE_43 # https://github.com/bridgecrewio/checkov/issues/741
-  # - CKV2_AZURE_8 # False positive about containers not being publicly accessible
-  # - CKV2_AZURE_21 # https://github.com/bridgecrewio/checkov/issues/1317
-
+  - CKV_AZURE_49 # If a user chooses to use SSH auth to their VMSS VM's, this will pass
+  - CKV_AZURE_97 # this feature must be enabled at the subscription level
