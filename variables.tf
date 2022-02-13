@@ -285,6 +285,11 @@ variable "resource_group_name" {
   default = "rg-dns-forwarding"
 }
 
+variable "subnet_has_nat_gateway" {
+  type        = bool
+  description = "The subnet where this module is to be deployed already has a NAT Gateway (required for the VMSS VM's to get access to the Internet)"
+}
+
 variable "vm_sku" {
   description = "The SKU of the VM to run the DNS forwarding services"
   type        = string

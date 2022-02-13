@@ -24,7 +24,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "dns_forwarding" {
   instances                  = var.quantity_of_instances
   health_probe_id            = azurerm_lb_probe.dns_forwarding.id
   source_image_id            = var.custom_source_image == false ? data.azurerm_shared_image_version.dmi_from_gallery.id : null
-  encryption_at_host_enabled = true
+  encryption_at_host_enabled = var.vmss_encryption_at_host_enabled
 
   # Either admin_username & admin_password must be specified OR public_key & public_key_username must be specified
   admin_username                  = var.admin_username
@@ -195,13 +195,17 @@ resource "azurerm_lb_backend_address_pool" "dns_forwarding" {
 # This must be done because the LB in front of the VMSS is internally facing and therefore does
 # not provide outbound access
 resource "azurerm_nat_gateway" "dns_forwarding" {
+  count               = var.subnet_has_nat_gateway == true ? 0 : 1
   name                = local.nat_gw_name
   location            = var.vnet_location
   resource_group_name = azurerm_resource_group.dns_forwarding.name
   sku_name            = "Standard"
+
+  tags = local.tags
 }
 
 resource "azurerm_public_ip" "dns_forwarding" {
+  count               = var.subnet_has_nat_gateway == true ? 0 : 1
   name                = local.nat_gw_ip_name
   location            = var.vnet_location
   resource_group_name = azurerm_resource_group.dns_forwarding.name
@@ -214,11 +218,13 @@ resource "azurerm_public_ip" "dns_forwarding" {
 }
 
 resource "azurerm_nat_gateway_public_ip_association" "dns_forwarding" {
-  nat_gateway_id       = azurerm_nat_gateway.dns_forwarding.id
-  public_ip_address_id = azurerm_public_ip.dns_forwarding.id
+  count                = var.subnet_has_nat_gateway == true ? 0 : 1
+  nat_gateway_id       = azurerm_nat_gateway.dns_forwarding[count.index].id
+  public_ip_address_id = azurerm_public_ip.dns_forwarding[count.index].id
 }
 
 resource "azurerm_subnet_nat_gateway_association" "dns_forwarding" {
+  count          = var.subnet_has_nat_gateway == true ? 0 : 1
   subnet_id      = var.vmss_subnet_id
-  nat_gateway_id = azurerm_nat_gateway.dns_forwarding.id
+  nat_gateway_id = azurerm_nat_gateway.dns_forwarding[count.index].id
 }

@@ -28,6 +28,7 @@ module "dns-forwarding" {
   vmss_subnet_id           = "/subscriptions/<subid>/resourceGroups/subnet-test/providers/Microsoft.Network/virtualNetworks/vnetname/subnets/subnet1"
   vnet_cidr                = "10.x.x.x/YY"
   vnet_location            = "westus"
+  subnet_has_nat_gateway   = <true/false>
 
   # Authentication for VMSS Virtual Machines
   # Either admin_username & admin_password must be used OR public_key & public_key_username must be used
@@ -80,6 +81,7 @@ After you have deployed this module and the `var.load_balancer_static_ip` is ser
 |------|-------------|------|---------|:--------:|
 | lb\_front\_end\_ip\_subnet | Subnet ID of the Load Balancer front end IP addresses | `string` | n/a | yes |
 | load\_balancer\_static\_ip | A static IP that will be the front end IP of the load balancer | `string` | n/a | yes |
+| subnet\_has\_nat\_gateway | The subnet where this module is to be deployed already has a NAT Gateway, which is required to be present for the VMSS VM's to get access to the Internet | `bool` | n/a | yes |
 | vmss\_subnet\_id | The ID of the subnet where you want to place the Virtual Machine Scale Set | `string` | n/a | yes |
 | vnet\_cidr | The CIDR notation of the VNet where you are deploying DNS forwarding, such as 10.100.34.0/24 | `string` | n/a | yes |
 | vnet\_location | The location, such as 'westus' of the Virtual Network where you want DNS Forwarding services | `string` | n/a | yes |
