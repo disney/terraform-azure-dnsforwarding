@@ -7,6 +7,17 @@ locals {
   nat_gw_name    = "nat-${var.vmss_name}"
   nat_gw_ip_name = "nat-pub-ip-${var.vmss_name}"
   tags           = merge(var.common_tags, var.custom_tags)
+
+  base_cloudinit = templatefile(
+    "${path.module}/templates/cloud-init.tftpl",
+    {
+      vnet_cidr_block = var.vnet_cidr,
+      dns_zones       = var.dns_zones,
+      querylog        = var.querylog,
+      frontend_ip     = var.load_balancer_static_ip
+    }
+  )
+
 }
 
 resource "azurerm_resource_group" "dns_forwarding" {
@@ -79,16 +90,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "dns_forwarding" {
     type = "SystemAssigned"
   }
 
-  user_data = base64encode(templatefile(
-    "${path.module}/templates/cloud-init.tmpl",
-    {
-      vnet_cidr_block = var.vnet_cidr,
-      dns_zones       = var.dns_zones,
-      querylog        = var.querylog,
-      frontend_ip     = var.load_balancer_static_ip
-    }
-    )
-  )
+  user_data = data.cloudinit_config.dns_forwarding.rendered
 
   depends_on = [
     azurerm_lb_rule.dns_forwarding,
@@ -96,6 +98,33 @@ resource "azurerm_linux_virtual_machine_scale_set" "dns_forwarding" {
   ]
 
   tags = local.tags
+}
+
+data "cloudinit_config" "dns_forwarding" {
+  gzip          = false
+  base64_encode = true
+
+  part {
+    content_type = "text/cloud-config"
+    content      = local.base_cloudinit
+  }
+
+  dynamic "part" {
+    for_each = var.additional_cloud_config_content != null ? [1] : []
+    content {
+      content_type = "text/cloud-config"
+      content      = var.additional_cloud_config_content
+      merge_type   = var.additional_cloud_config_merge_type
+    }
+  }
+
+  dynamic "part" {
+    for_each = var.user_data_script != null ? [1] : []
+    content {
+      content_type = "text/x-shellscript"
+      content      = var.user_data_script
+    }
+  }
 }
 
 data "azurerm_shared_image_version" "dmi_from_gallery" {

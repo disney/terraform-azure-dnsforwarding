@@ -1,15 +1,10 @@
 # Azure DNS Forwarding within your ExpressRoute Connected VNet
 
-When your VNet is connected to the Disney Global Network (DGN) via an ExpressRoute circuit and you need to resolve Disney private DNS names as well as public DNS names, you need a DNS forwarding configuration. 
+When your VNet is connected to your 'on-prem' company/corporate network via an ExpressRoute circuit and you need to resolve private DNS names as well as public DNS names, you need a DNS forwarding solution. 
 
-This Terraform module stands up a Virtual Machine Scale Set (VMSS) with two VM's running `bind` which will appropriately forward your DNS queries to either Disney private DNS servers or Azure's public DNS resolution service. These VMSS is fronted with an Azure Load Balancer that has two front-end static IP's which you will then configure in your VNet as Custom DNS servers. Once this is done, any existing VM's (provided you reboot them), or new VM's will use these VIP's as their DNS servers. Below is a diagram of what this TF module will build:
+This Terraform module stands up a Virtual Machine Scale Set (VMSS) with two VM's running `bind` which will appropriately forward your DNS queries to either your private DNS servers or Azure's public DNS resolution service. These VMSS is fronted with an Azure Load Balancer that has two front-end static IP's which you will then configure in your VNet as Custom DNS servers. Once this is done, any existing VM's (provided you reboot them), or new VM's will use these VIP's as their DNS servers. Below is a diagram of what this TF module will build:
 
 ![alt text](readme_images/dns-forwarding.png "DNS Forwarding within your VNet")
-
-## Usage 
-
-All Disney Terraform modules are used by referencing release tags. Each follows SemVer for tagging. More information can be found [here](https://semver.org/).
-Not referencing a tag version will cause the master branch to be used - which may not have been fully tested.
 
 ### Terraform State & Source Code Storage
 
@@ -21,7 +16,7 @@ For the `admin_username`, `admin_password` OR `public_key`, `public_key_username
 
 ```hcl
 module "dns-forwarding" {
-  source                   = "terraform.disney.com/twdc/dns-forwarding/azure"
+  source                   = "disney/azure-dns-forwarding"
   version                  = "<always_specify_version_number>"
   lb_front_end_ip_subnet   = "/subscriptions/<subid>/resourceGroups/subnet-test/providers/Microsoft.Network/virtualNetworks/vnetname/subnets/subnet1"
   load_balancer_static_ip  = "10.x.x.x" 
@@ -29,6 +24,12 @@ module "dns-forwarding" {
   vnet_cidr                = "10.x.x.x/YY"
   vnet_location            = "westus"
   subnet_has_nat_gateway   = <true/false>
+
+  # Zones to forward to private DNS resolvers
+  dns_zones = {
+    "on-prem-zone1.com" = ["10.x.x.x", "10.y.y.y.y"]
+    "on-prem-zone2.com" = ["10.x.x.x", "10.z.z.z.z"]
+  }
 
   # Authentication for VMSS Virtual Machines
   # Either admin_username & admin_password must be used OR public_key & public_key_username must be used
@@ -47,12 +48,14 @@ After you have deployed this module and the `var.load_balancer_static_ip` is ser
 |------|---------|
 | terraform | >= 1.1.3 |
 | azurerm | >= 2.94 |
+| cloudinit | >= 2.20 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | azurerm | 2.94.0 |
+| cloudinit | 2.20 |
 
 
 ## Resources
@@ -79,20 +82,22 @@ After you have deployed this module and the `var.load_balancer_static_ip` is ser
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| dns\_zones | List of DNS Zones who's requests should be forwarded to private, on-prem DNS servers | `object` | n/a | yes |
 | lb\_front\_end\_ip\_subnet | Subnet ID of the Load Balancer front end IP addresses | `string` | n/a | yes |
 | load\_balancer\_static\_ip | A static IP that will be the front end IP of the load balancer | `string` | n/a | yes |
-| subnet\_has\_nat\_gateway | The subnet where this module is to be deployed already has a NAT Gateway, which is required to be present for the VMSS VM's to get access to the Internet | `bool` | n/a | yes |
+| subnet\_has\_nat\_gateway | The subnet where this module is to be deployed already has a NAT Gateway (required for the VMSS VM's to get access to the Internet) | `bool` | n/a | yes |
 | vmss\_subnet\_id | The ID of the subnet where you want to place the Virtual Machine Scale Set | `string` | n/a | yes |
 | vnet\_cidr | The CIDR notation of the VNet where you are deploying DNS forwarding, such as 10.100.34.0/24 | `string` | n/a | yes |
 | vnet\_location | The location, such as 'westus' of the Virtual Network where you want DNS Forwarding services | `string` | n/a | yes |
+| additional\_cloud\_config\_content | Optional additional cloud-config file content to be merged in with main cloud-config. | `string` | `null` | no |
+| additional\_cloud\_config\_merge\_type | Optional value for the `X-Merge-Type` header to control cloud-init merging behavior when `additional_cloud_config_content` is provided. See https://cloudinit.readthedocs.io/en/latest/topics/merging.html for available options. | `string` | `null` | no |
 | admin\_password | The admin password of the admin\_username for the VM's in the VMSS. Either admin\_username & admin\_password must be used OR public\_key & public\_key\_username must be used | `string` | `null` | no |
 | admin\_username | The username of the local administrator on each Virtual Machine Scale Set instance | `string` | `null` | no |
 | automatic\_instance\_repair | Should the VMSS automatically repair unhealthy hosts | `bool` | `true` | no |
-| common\_tags | n/a | `map(string)` | ```{ "managed_by": "terraform", "project": "Azure DNS forwarding", "repo": "https://gitlab.disney.com/terraform/modules/azure/terraform-azure-dnsforwarding" }``` | no |
+| common\_tags | n/a | `map(string)` | ```{ "managed_by": "terraform", "project": "Azure DNS forwarding" }``` | no |
 | custom\_source\_image | Use a custom specified image for the VM's in the Scale Set, as opposed to the default image which is the latest Ubuntu 20 image from the DMI image gallery | `bool` | `false` | no |
 | custom\_tags | Map of tags you would like to have added to the common\_tags to tag all applicable resources | `map(string)` | `{}` | no |
 | dgn\_cidrs | List of DGN CIDR's to permit inbound to ssh into the backend VM's | `list(string)` | ```[ "10.0.0.0/8" ]``` | no |
-| dns\_zones | List of DNS Zones who's requests should be forwarded to Disney on-prem DNS servers | `list(string)` | ```[ "bcs.pvt", "corp.dig.com", "dig.com", "disney.com", "disney.network", "disney.pvt", "espn.pvt", "espn3.com", "go.com", "mgmt.prod", "mscorp.loc", "starwave.com", "wcntc.com", "wdig.com", "wdig.root", "wdw.disney.com", "woc.prod" ]``` | no |
 | grace\_period\_instance\_repair | Amount of time (in minutes, between 30 and 90, defaults to 30 minutes) for which automatic repairs will be delayed. The grace period starts right after the VM is found unhealthy. The time duration should be specified in ISO 8601 format. | `string` | `"PT30M"` | no |
 | image\_gallery\_gallery\_name | Name of image gallery where image comes from | `string` | `"dmi"` | no |
 | image\_gallery\_image\_name | Name of the image from the gallery | `string` | `"base-dtss-ubuntu-20"` | no |
@@ -106,6 +111,7 @@ After you have deployed this module and the `var.load_balancer_static_ip` is ser
 | quantity\_of\_instances | The number of Virtual Machines in the Scale Set | `number` | `2` | no |
 | querylog | Querylog enabled in named.conf.options | `string` | `"false"` | no |
 | resource\_group\_name | n/a | `string` | `"rg-dns-forwarding"` | no |
+| user\_data\_script | Optional cloud-config user-data script. See https://cloudinit.readthedocs.io/en/latest/topics/format.html?highlight=shell#user-data-script for more info. | `string` | `null` | no |
 | vm\_sku | The SKU of the VM to run the DNS forwarding services | `string` | `"Standard_D2_v5"` | no |
 | vmss\_image\_offer | Must be specified if var.custom\_source\_image is true. Specifies the offer of the image used to create the virtual machines | `string` | `null` | no |
 | vmss\_image\_publisher | Must be specified if var.custom\_source\_image is true. Specifies the publisher of the image used to create the virtual machines | `string` | `null` | no |
@@ -119,4 +125,8 @@ No outputs.
 
 ### Author
 
-[Mitchell L. Cooper](https://rostr.disney.com/people/9e90e242c48b32d16935112c7daa1af4)
+Mitchell L. Cooper
+
+### Contributor
+
+Justice M. London

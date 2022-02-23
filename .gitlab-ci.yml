@@ -1,5 +1,3 @@
-# Thanks to Justice London for this validation script.
-
 image: hashicorp/terraform:1.1.3
 
 stages:

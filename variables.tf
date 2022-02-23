@@ -129,6 +129,19 @@ locals {
   ]
 }
 
+variable "additional_cloud_config_content" {
+  description = "Optional additional cloud-config file content to be merged in with main cloud-config."
+  type        = string
+  default     = null
+}
+
+variable "additional_cloud_config_merge_type" {
+  description = "Optional value for the `X-Merge-Type` header to control cloud-init merging behavior when `additional_cloud_config_content` is provided. See https://cloudinit.readthedocs.io/en/latest/topics/merging.html for available options."
+  type        = string
+  default     = null
+}
+
+
 variable "admin_password" {
   type        = string
   description = "The admin password of the admin_username for the VM's in the VMSS. Either admin_username & admin_password must be used OR public_key & public_key_username must be used"
@@ -151,7 +164,6 @@ variable "common_tags" {
   type = map(string)
   default = {
     managed_by = "terraform"
-    repo       = "https://gitlab.disney.com/terraform/modules/azure/terraform-azure-dnsforwarding"
     project    = "Azure DNS forwarding"
   }
 }
@@ -175,27 +187,13 @@ variable "dgn_cidrs" {
 }
 
 variable "dns_zones" {
-  description = "List of DNS Zones who's requests should be forwarded to Disney on-prem DNS servers"
-  type        = list(string)
-  default = [
-    "bcs.pvt",
-    "corp.dig.com",
-    "dig.com",
-    "disney.com",
-    "disney.network",
-    "disney.pvt",
-    "espn.pvt",
-    "espn3.com",
-    "go.com",
-    "mgmt.prod",
-    "mscorp.loc",
-    "starwave.com",
-    "wcntc.com",
-    "wdig.com",
-    "wdig.root",
-    "wdw.disney.com",
-    "woc.prod"
-  ]
+  description = "List of DNS Zones who's requests should be forwarded to private DNS servers and the IP's of the DNS forwarders requests should be sent to"
+  default     = <<EXAMPLE
+    {
+      "on-prem-zone1.com" = ["10.x.x.x", "10.y.y.y.y"]
+      "on-prem-zone2.com" = ["10.x.x.x", "10.z.z.z.z"]
+    }
+  EXAMPLE
 }
 
 variable "grace_period_instance_repair" {
@@ -288,6 +286,12 @@ variable "resource_group_name" {
 variable "subnet_has_nat_gateway" {
   type        = bool
   description = "The subnet where this module is to be deployed already has a NAT Gateway (required for the VMSS VM's to get access to the Internet)"
+}
+
+variable "user_data_script" {
+  description = "Optional cloud-config user-data script. See https://cloudinit.readthedocs.io/en/latest/topics/format.html?highlight=shell#user-data-script for more info."
+  type        = string
+  default     = null
 }
 
 variable "vm_sku" {
