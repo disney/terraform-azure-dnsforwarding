@@ -11,10 +11,10 @@ locals {
   base_cloudinit = templatefile(
     "${path.module}/templates/cloud-init.tftpl",
     {
-      vnet_cidr_block = var.vnet_cidr,
-      dns_zones       = var.dns_zones,
-      querylog        = var.querylog,
-      frontend_ip     = var.load_balancer_static_ip,
+      vnet_cidr_block        = var.vnet_cidr,
+      dns_zones              = var.dns_zones,
+      querylog               = var.querylog,
+      frontend_ip            = var.load_balancer_static_ip,
       allowed-query-networks = var.permitted_to_query_dns_forwarders
     }
   )
@@ -107,7 +107,7 @@ data "cloudinit_config" "dns_forwarding" {
 
   part {
     content_type = "text/cloud-config"
-    content      = local.base_cloudinit
+    content      = var.custom_base_cloudinit != null ? var.custom_base_cloudinit : local.base_cloudinit
   }
 
   dynamic "part" {

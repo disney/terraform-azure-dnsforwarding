@@ -168,6 +168,12 @@ variable "common_tags" {
   }
 }
 
+variable "custom_base_cloudinit" {
+  type        = string
+  description = "Gives users of this module the option of replacing the entire defult DNS configuration, found in local.base_cloudinit, with their own config."
+  default     = null
+}
+
 variable "custom_source_image" {
   type        = bool
   description = "Use a custom specified image for the VM's in the Scale Set, as opposed to the default image which is the latest Ubuntu 20 image from the DMI image gallery"
@@ -255,9 +261,9 @@ variable "os_disk_size_gb" {
 }
 
 variable "permitted_to_query_dns_forwarders" {
-  type       = list(string)
+  type        = list(string)
   description = "This is a list of CIDR blocks that are permitted to query the DNS forwarders via the `allowed-query` config item in the named.conf.options file"
-  default  = ["10.0.0.0/8"]
+  default     = ["10.0.0.0/8"]
 }
 
 variable "public_key" {

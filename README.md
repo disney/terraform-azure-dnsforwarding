@@ -95,6 +95,7 @@ After you have deployed this module and the `var.load_balancer_static_ip` is ser
 | admin\_username | The username of the local administrator on each Virtual Machine Scale Set instance | `string` | `null` | no |
 | automatic\_instance\_repair | Should the VMSS automatically repair unhealthy hosts | `bool` | `true` | no |
 | common\_tags | n/a | `map(string)` | ```{ "managed_by": "terraform", "project": "Azure DNS forwarding" }``` | no |
+| custom\_base\_cloudinit | Gives users of this module the option of replacing the entire defult DNS configuration, found in local.base_cloudinit, with their own config. | `string` | `null` | no |
 | custom\_source\_image | Use a custom specified image for the VM's in the Scale Set, as opposed to the default image which is the latest Ubuntu 20 image from the DMI image gallery | `bool` | `false` | no |
 | custom\_tags | Map of tags you would like to have added to the common\_tags to tag all applicable resources | `map(string)` | `{}` | no |
 | dgn\_cidrs | List of DGN CIDR's to permit inbound to ssh into the backend VM's | `list(string)` | ```[ "10.0.0.0/8" ]``` | no |
