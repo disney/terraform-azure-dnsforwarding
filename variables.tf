@@ -254,6 +254,12 @@ variable "os_disk_size_gb" {
   default     = 40
 }
 
+variable "permitted_to_query_dns_forwarders" {
+  type       = list(string)
+  description = "This is a list of CIDR blocks that are permitted to query the DNS forwarders via the `allowed-query` config item in the named.conf.options file"
+  default  = ["10.0.0.0/8"]
+}
+
 variable "public_key" {
   type        = string
   description = "The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format. Either admin_username & admin_password must be used OR public_key & public_key_username must be used"

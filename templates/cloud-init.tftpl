@@ -14,31 +14,21 @@ write_files:
   owner: 'root:root'
   permissions: '0644'
   content: |
-    acl vnet { ${ vnet_cidr_block }; };
     options {
       directory "/var/cache/bind";
       forward only;
       forwarders { 168.63.129.16; };
-      allow-query { localhost; localnets; ${ vnet_cidr_block }; };
+      %{ for cidr in allowed-query-networks ~}
+      allow-query { localhost; localnets; ${join("; ", cidr)}; };
+      %{ endfor ~}
       querylog ${ querylog };
     };
 
 - path: /etc/bind/named.conf.local
   owner: 'root:root'
   permissions: '0644'
-  content: |
-    view public {
-        match-clients { vnet; };
-
-        zone "."                { type hint; file "/etc/bind/db.root"; };
-        zone "localhost"        { type master; file "/etc/bind/db.local"; };
-        zone "127.in-addr.arpa" { type master; file "/etc/bind/db.127"; };
-        zone "0.in-addr.arpa"   { type master; file "/etc/bind/db.0"; };
-        zone "255.in-addr.arpa" { type master; file "/etc/bind/db.255"; };
-    };
-    
-    view default {
-      match-clients { vnet; };
+  content: |    
+    view default {      
       zone "."                { type hint; file "/etc/bind/db.root"; };
       zone "localhost"        { type master; file "/etc/bind/db.local"; };
       zone "127.in-addr.arpa" { type master; file "/etc/bind/db.127"; };
@@ -54,8 +44,6 @@ runcmd:
   - wget https://www.internic.net/domain/named.root -O /etc/bind/db.root
   - chown root:root /etc/bind/db.root && chmod 0644 /etc/bind/db.root
   - sysctl -p
-  - mv /etc/bind/named.conf.default-zones /etc/bind/named.conf.default-zones.orig
-  - touch /etc/bind/named.conf.default-zones
   - systemctl enable bind9.service
   - systemctl restart bind9.service
   - ifconfig lo:0 ${ frontend_ip } netmask 255.255.255.255 up

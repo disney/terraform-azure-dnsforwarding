@@ -106,6 +106,7 @@ After you have deployed this module and the `var.load_balancer_static_ip` is ser
 | os\_disk\_caching | The Type of Caching which should be used for the Internal OS Disk. Possible values are None, ReadOnly and ReadWrite | `string` | `"None"` | no |
 | os\_disk\_size\_gb | The Size of the Internal OS Disk in GB, if you wish to vary from the size used in the image this Virtual Machine Scale Set is sourced from | `number` | `40` | no |
 | os\_disk\_storage\_account\_type | The Type of Storage Account which should back this the Internal OS Disk. Possible values include Standard\_LRS, StandardSSD\_LRS and Premium\_LRS | `string` | `"Standard_LRS"` | no |
+| permitted\_to\_query\_dns\_forwarders | List of CIDR blocks that are permitted to query the DNS forwarders via the `allowed-query` config item in the named.conf.options file | `list(string)` | `[10.0.0.0/8]` | no |
 | public\_key | The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format. Either admin\_username & admin\_password must be used OR public\_key & public\_key\_username must be used | `string` | `null` | no |
 | public\_key\_username | The Username for which this Public SSH Key should be configured | `string` | `null` | no |
 | quantity\_of\_instances | The number of Virtual Machines in the Scale Set | `number` | `2` | no |
@@ -127,6 +128,7 @@ No outputs.
 
 Mitchell L. Cooper
 
-### Contributor
+### Contributors
 
 Justice M. London
+James Philpott
