@@ -33,6 +33,7 @@ module "dns-forwarding" {
 
   # Authentication for VMSS Virtual Machines
   # Either admin_username & admin_password must be used OR public_key & public_key_username must be used
+  # The values of these two variables should be encrypted; please see note about use of SOPS above
   admin_username = "<username>"
   admin_password = "<password>"
 }
@@ -274,5 +275,5 @@ Mitchell L. Cooper
 
 ### Contributors
 
-Justice M. London
-James Philpott
+- Justice M. London
+- James Philpott
