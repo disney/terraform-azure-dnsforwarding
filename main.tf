@@ -15,7 +15,9 @@ locals {
       dns_zones              = var.dns_zones,
       querylog               = var.querylog,
       frontend_ip            = var.load_balancer_static_ip,
-      allowed-query-networks = var.permitted_to_query_dns_forwarders
+      allowed-query-networks = [var.permitted_to_query_dns_forwarders],
+      dnssec-enabled         = var.dnssec_enable,
+      dnssec-validation      = var.dnssec_validation
     }
   )
 
@@ -154,7 +156,7 @@ resource "azurerm_network_security_group" "dns_forwarding" {
 }
 
 resource "azurerm_network_security_rule" "dns_forwarding" {
-  for_each                                   = { for r in local.default_nsg_rules : r.name => r }
+  for_each                                   = var.custom_nsg_rules != null ? { for r in var.custom_nsg_rules : r.name => r } : { for r in local.default_nsg_rules : r.name => r } 
   name                                       = each.value["name"]
   resource_group_name                        = azurerm_resource_group.dns_forwarding.name
   network_security_group_name                = azurerm_network_security_group.dns_forwarding.name

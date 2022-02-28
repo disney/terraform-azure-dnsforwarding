@@ -174,6 +174,11 @@ variable "custom_base_cloudinit" {
   default     = null
 }
 
+variable "custom_nsg_rules" {
+  description = "Gives users of this module the option of supplying their own NSG rules."
+  default = null
+}
+
 variable "custom_source_image" {
   type        = bool
   description = "Use a custom specified image for the VM's in the Scale Set, as opposed to the default image which is the latest Ubuntu 20 image from the DMI image gallery"
@@ -190,6 +195,18 @@ variable "dgn_cidrs" {
   description = "List of DGN CIDR's to permit inbound to ssh into the backend VM's"
   type        = list(string)
   default     = ["10.0.0.0/8"]
+}
+
+variable "dnssec_enable" {
+  description = "Configure `dnssec-enable` setting in /etc/bind/named.conf.options"
+  type = string 
+  default = "yes"
+}
+
+variable "dnssec_validation" {
+  description = "Configure `dnssec-validation` setting in /etc/bind/named.conf.options"
+  type = string 
+  default = "yes"
 }
 
 variable "dns_zones" {

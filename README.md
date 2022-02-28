@@ -42,6 +42,146 @@ module "dns-forwarding" {
 
 After you have deployed this module and the `var.load_balancer_static_ip` is servicing DNS requests, you must configure both of these static IP's as Custom DNS servers in your VNet configuration which is explained in this [article](https://docs.microsoft.com/en-us/azure/virtual-network/manage-virtual-network#change-dns-servers). In `Step 4`, add the `var.load_balancer_static_ip` as a Custom DNS server to your VNet. Please then refer to the remaining steps, 5 and 6.
 
+## Performance Metrics
+
+Performance of the two DNS forwarders via the Azure LB was measured with 50,000 DNS queries of different names for which the DNS forwarders are authoritative, and 50,000 DNS queries of the same name for which the DNS forwarders are authoritative. The [dnsperf](https://github.com/DNS-OARC/dnsperf) tool was used.
+
+The test run with 50,000 different DNS names is meant to show the average performance of the particular size of VM that was used. The test run with 50,000 of the same DNS name is meant to show the "maximum potenantial throughput" of the size of VM that was used.
+
+### Standard_D2_v5 Azure VM
+
+#### 50,000 DNS Queries with Different Names
+```
+user@bastion01:~/sample-query-data# time dnsperf -s 10.142.20.73 -c 5 -T 5 -d testdomainname-50000-lines.txt
+DNS Performance Testing Tool
+Version 2.9.0
+
+[Status] Command line: dnsperf -s 10.142.20.73 -c 5 -T 5 -d testdomainname-50000-lines.txt
+[Status] Sending queries (to 10.142.20.73:53)
+[Status] Started at: Mon Feb 28 19:50:37 2022
+[Status] Stopping after 1 run through file
+[Status] Testing complete (end of file)
+
+Statistics:
+
+  Queries sent:         50000
+  Queries completed:    50000 (100.00%)
+  Queries lost:         0 (0.00%)
+
+  Response codes:       NOERROR 50000 (100.00%)
+  Average packet size:  request 55, response 71
+  Run time (s):         9.735678
+  Queries per second:   5135.749149
+
+  Average Latency (s):  0.018821 (min 0.012951, max 1.235112)
+  Latency StdDev (s):   0.027804
+
+
+real    0m9.748s
+user    0m0.313s
+sys     0m0.796s
+```
+
+#### 50,000 DNS Queries with Same Name
+```
+user@bastion01:~/sample-query-data# time dnsperf -s 10.142.20.73 -c 5 -T 5 -d identical-testdomainname-50000-lines.txt
+DNS Performance Testing Tool
+Version 2.9.0
+
+[Status] Command line: dnsperf -s 10.142.20.73 -c 5 -T 5 -d identical-testdomainname-50000-lines.txt
+[Status] Sending queries (to 10.142.20.73:53)
+[Status] Started at: Mon Feb 28 19:56:50 2022
+[Status] Stopping after 1 run through file
+[Timeout] Query timed out: msg id 8284
+[Timeout] Query timed out: msg id 8285
+[Status] Testing complete (end of file)
+
+Statistics:
+
+  Queries sent:         50000
+  Queries completed:    49998 (100.00%)
+  Queries lost:         2 (0.00%)
+
+  Response codes:       NOERROR 49998 (100.00%)
+  Average packet size:  request 49, response 65
+  Run time (s):         0.545993
+  Queries per second:   91572.602579
+
+  Average Latency (s):  0.000901 (min 0.000284, max 0.010960)
+  Latency StdDev (s):   0.000854
+
+
+real    0m5.460s
+user    0m2.477s
+sys     0m2.785s
+```
+
+### Standard_D8_v5 Azure VM
+
+#### 50,000 DNS Queries with Different Names
+```
+root@bidevlbastion01:~/sample-query-data# time dnsperf -s 10.142.20.73 -c 5 -T 5 -d testdomainname-50000-lines.txt
+DNS Performance Testing Tool
+Version 2.9.0
+
+[Status] Command line: dnsperf -s 10.142.20.73 -c 5 -T 5 -d testdomainname-50000-lines.txt
+[Status] Sending queries (to 10.142.20.73:53)
+[Status] Started at: Mon Feb 28 20:32:07 2022
+[Status] Stopping after 1 run through file
+[Status] Testing complete (end of file)
+
+Statistics:
+
+  Queries sent:         50000
+  Queries completed:    50000 (100.00%)
+  Queries lost:         0 (0.00%)
+
+  Response codes:       NOERROR 50000 (100.00%)
+  Average packet size:  request 55, response 71
+  Run time (s):         9.039720
+  Queries per second:   5531.144770
+
+  Average Latency (s):  0.017878 (min 0.012870, max 1.238351)
+  Latency StdDev (s):   0.023269
+
+
+real    0m9.051s
+user    0m0.297s
+sys     0m0.728s
+```
+
+#### 50,000 DNS Queries with Same Name
+```
+root@bidevlbastion01:~/sample-query-data# time dnsperf -s 10.142.20.73 -c 5 -T 5 -d identical-testdomainname-50000-lines.txt
+DNS Performance Testing Tool
+Version 2.9.0
+
+[Status] Command line: dnsperf -s 10.142.20.73 -c 5 -T 5 -d identical-testdomainname-50000-lines.txt
+[Status] Sending queries (to 10.142.20.73:53)
+[Status] Started at: Mon Feb 28 20:33:07 2022
+[Status] Stopping after 1 run through file
+[Status] Testing complete (end of file)
+
+Statistics:
+
+  Queries sent:         48500
+  Queries completed:    48500 (100.00%)
+  Queries lost:         0 (0.00%)
+
+  Response codes:       NOERROR 48500 (100.00%)
+  Average packet size:  request 49, response 65
+  Run time (s):         0.475324
+  Queries per second:   102035.664094
+
+  Average Latency (s):  0.000789 (min 0.000290, max 0.009938)
+  Latency StdDev (s):   0.000718
+
+
+real    0m0.496s
+user    0m0.099s
+sys     0m0.274s
+```
+
 ## Requirements
 
 | Name | Version |
@@ -96,9 +236,12 @@ After you have deployed this module and the `var.load_balancer_static_ip` is ser
 | automatic\_instance\_repair | Should the VMSS automatically repair unhealthy hosts | `bool` | `true` | no |
 | common\_tags | n/a | `map(string)` | ```{ "managed_by": "terraform", "project": "Azure DNS forwarding" }``` | no |
 | custom\_base\_cloudinit | Gives users of this module the option of replacing the entire defult DNS configuration, found in local.base_cloudinit, with their own config. | `string` | `null` | no |
+| custom\_nsg\_rules | Gives users of this module the option of supplying their own NSG rules. | `object` | `null` | no |
 | custom\_source\_image | Use a custom specified image for the VM's in the Scale Set, as opposed to the default image which is the latest Ubuntu 20 image from the DMI image gallery | `bool` | `false` | no |
 | custom\_tags | Map of tags you would like to have added to the common\_tags to tag all applicable resources | `map(string)` | `{}` | no |
 | dgn\_cidrs | List of DGN CIDR's to permit inbound to ssh into the backend VM's | `list(string)` | ```[ "10.0.0.0/8" ]``` | no |
+| dnssec\_enable | Configure `dnssec-enable` setting in /etc/bind/named.conf.options | `string`| `"yes"` | no |
+| dnssec\_validation | Configure `dnssec-validation` setting in /etc/bind/named.conf.options | `string` | `"yes"` | no |
 | grace\_period\_instance\_repair | Amount of time (in minutes, between 30 and 90, defaults to 30 minutes) for which automatic repairs will be delayed. The grace period starts right after the VM is found unhealthy. The time duration should be specified in ISO 8601 format. | `string` | `"PT30M"` | no |
 | image\_gallery\_gallery\_name | Name of image gallery where image comes from | `string` | `"dmi"` | no |
 | image\_gallery\_image\_name | Name of the image from the gallery | `string` | `"base-dtss-ubuntu-20"` | no |

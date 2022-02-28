@@ -18,31 +18,24 @@ write_files:
       directory "/var/cache/bind";
       forward only;
       forwarders { 168.63.129.16; };
-      %{ for cidr in allowed-query-networks ~}
+%{ for cidr in allowed-query-networks ~}
       allow-query { localhost; localnets; ${join("; ", cidr)}; };
-      %{ endfor ~}
+%{ endfor ~}
       querylog ${ querylog };
+      dnssec-enable ${ dnssec-enabled };
+      dnssec-validation ${ dnssec-validation };
     };
 
 - path: /etc/bind/named.conf.local
   owner: 'root:root'
   permissions: '0644'
-  content: |    
-    view default {      
-      zone "."                { type hint; file "/etc/bind/db.root"; };
-      zone "localhost"        { type master; file "/etc/bind/db.local"; };
-      zone "127.in-addr.arpa" { type master; file "/etc/bind/db.127"; };
-      zone "0.in-addr.arpa"   { type master; file "/etc/bind/db.0"; };
-      zone "255.in-addr.arpa" { type master; file "/etc/bind/db.255"; };
-
-      %{ for zone, servers in dns_zones ~}
-      zone "${zone}" { type forward; forward only; forwarders { ${join("; ", servers)}; }; };
-      %{ endfor ~}
-    };
+  content: |      
+%{ for zone, servers in dns_zones ~}
+    zone "${zone}" { type forward; forward only; forwarders { ${join("; ", servers)}; }; };
+%{ endfor ~}
 
 runcmd:
-  - wget https://www.internic.net/domain/named.root -O /etc/bind/db.root
-  - chown root:root /etc/bind/db.root && chmod 0644 /etc/bind/db.root
+  - wget https://www.internic.net/domain/named.root -O /usr/share/dns/root.hints
   - sysctl -p
   - systemctl enable bind9.service
   - systemctl restart bind9.service
