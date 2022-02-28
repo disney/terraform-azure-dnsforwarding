@@ -176,7 +176,7 @@ variable "custom_base_cloudinit" {
 
 variable "custom_nsg_rules" {
   description = "Gives users of this module the option of supplying their own NSG rules."
-  default = null
+  default     = null
 }
 
 variable "custom_source_image" {
@@ -199,14 +199,14 @@ variable "dgn_cidrs" {
 
 variable "dnssec_enable" {
   description = "Configure `dnssec-enable` setting in /etc/bind/named.conf.options"
-  type = string 
-  default = "yes"
+  type        = string
+  default     = "yes"
 }
 
 variable "dnssec_validation" {
   description = "Configure `dnssec-validation` setting in /etc/bind/named.conf.options"
-  type = string 
-  default = "yes"
+  type        = string
+  default     = "yes"
 }
 
 variable "dns_zones" {
