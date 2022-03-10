@@ -72,6 +72,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "dns_forwarding" {
   network_interface {
     name                          = local.nic_name
     network_security_group_id     = azurerm_network_security_group.dns_forwarding.id
+    dns_servers                   = ["168.63.129.16"]
     enable_accelerated_networking = true
     primary                       = true
 
