@@ -39,4 +39,3 @@ runcmd:
   - sysctl -p
   - systemctl enable bind9.service
   - systemctl restart bind9.service
-  - ifconfig lo:0 ${ frontend_ip } netmask 255.255.255.255 up

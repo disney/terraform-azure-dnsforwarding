@@ -21,6 +21,12 @@ locals {
     }
   )
 
+  base_cloudinit_every_boot = templatefile(
+    "${path.module}/templates/cloud-init-every-boot.tftpl",
+    {
+      frontend_ip = var.load_balancer_static_ip
+    }
+  )
 }
 
 resource "azurerm_resource_group" "dns_forwarding" {
@@ -111,6 +117,12 @@ data "cloudinit_config" "dns_forwarding" {
   part {
     content_type = "text/cloud-config"
     content      = var.custom_base_cloudinit != null ? var.custom_base_cloudinit : local.base_cloudinit
+  }
+
+  # adding a loopback or dummy interface is not persistent so we do it in an x-shellscript-per-boot part
+  part {
+    content_type = "text/x-shellscript-per-boot"
+    content      = local.base_cloudinit_every_boot
   }
 
   dynamic "part" {
