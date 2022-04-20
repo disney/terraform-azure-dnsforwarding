@@ -203,23 +203,21 @@ resource "azurerm_lb" "dns_forwarding" {
     private_ip_address_allocation = "Static"
     private_ip_address_version    = "IPv4"
     subnet_id                     = var.lb_front_end_ip_subnet
-    availability_zone             = contains(local.availability_zones, var.vnet_location) ? "Zone-Redundant" : "No-Zone"
+    zones                         = contains(keys(local.availability_zones), var.vnet_location) ? local.availability_zones[var.vnet_location] : null
   }
 
   tags = local.tags
 }
 
 resource "azurerm_lb_probe" "dns_forwarding" {
-  resource_group_name = azurerm_resource_group.dns_forwarding.name
-  loadbalancer_id     = azurerm_lb.dns_forwarding.id
-  name                = "dns-forwarding-probe"
-  port                = 53
-  protocol            = "Tcp"
+  loadbalancer_id = azurerm_lb.dns_forwarding.id
+  name            = "dns-forwarding-probe"
+  port            = 53
+  protocol        = "Tcp"
 }
 
 resource "azurerm_lb_rule" "dns_forwarding" {
   for_each                       = toset(["Tcp", "Udp"])
-  resource_group_name            = azurerm_resource_group.dns_forwarding.name
   loadbalancer_id                = azurerm_lb.dns_forwarding.id
   name                           = "LBRule-${each.value}-${regex("[^.]*$", var.load_balancer_static_ip)}"
   protocol                       = each.value
@@ -256,7 +254,7 @@ resource "azurerm_public_ip" "dns_forwarding" {
   resource_group_name = azurerm_resource_group.dns_forwarding.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  availability_zone   = contains(local.availability_zones, var.vnet_location) ? "Zone-Redundant" : "No-Zone"
+  zones               = contains(keys(local.availability_zones), var.vnet_location) ? local.availability_zones[var.vnet_location] : null
   ip_version          = "IPv4"
 
   tags = local.tags

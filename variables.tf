@@ -110,23 +110,24 @@ locals {
     }
   ]
 
-  # List of regions that support Availability Zones so we can determine which regions the LB can be zone-redundant
-  availability_zones = [
-    "westus2",
-    "westus3",
-    "eastus",
-    "eastus2",
-    "centralus",
-    "northeurope",
-    "uksouth",
-    "francecentral",
-    "westeurope",
-    "southeastasia",
-    "japaneast",
-    "swedencentral",
-    "germanywestcentral",
-    "norwayeast"
-  ]
+  # `az account list-locations | jq .[].'name' -r | grep -v 'stage$' | xargs -I {} az vm list-skus --resource-type virtualMachines --location {} | jq 'if . != [] then .[0].locationInfo | .[0] | {(.location): (.zones | if type=="array" then sort else . end)} else . end' -c`
+  availability_zones = {
+    eastus             = ["1", "2", "3"]
+    eastus2            = ["1", "2", "3"]
+    southcentralus     = ["1", "2", "3"]
+    westus2            = ["1", "2", "3"]
+    westus3            = ["1", "2", "3"]
+    southeastasia      = ["1", "2", "3"]
+    swedencentral      = ["1", "2", "3"]
+    uksouth            = ["1", "2", "3"]
+    centralus          = ["1", "2", "3"]
+    southafricanorth   = ["1", "2", "3"]
+    centralindia       = ["1", "2", "3"]
+    japaneast          = ["1", "2", "3"]
+    koreacentral       = ["1", "2", "3"]
+    germanywestcentral = ["1", "2", "3"]
+    norwayeast         = ["1", "2", "3"]
+  }
 }
 
 variable "additional_cloud_config_content" {

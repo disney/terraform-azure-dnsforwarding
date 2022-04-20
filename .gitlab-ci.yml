@@ -18,6 +18,3 @@ validate:
   stage: validate
   script:
     - pre-commit run -a --show-diff-on-failure
-  except:
-    changes:
-      - "README.md"
