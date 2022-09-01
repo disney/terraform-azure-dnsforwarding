@@ -17,7 +17,7 @@ jobs:
       - uses: terraform-linters/setup-tflint@v2
       - uses: bridgecrewio/checkov-action@master
         with:
-          skip_check: CKV_AZURE_49,CKV_AZURE_97,CKV_AZURE_149
+          skip_check: CKV_AZURE_49
       - uses: pre-commit/action@v3.0.0
         with:
           extra_args: -a --show-diff-on-failure
