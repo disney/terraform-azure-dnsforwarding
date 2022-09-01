@@ -9,8 +9,6 @@ jobs:
         with:
           python-version: '3.9'
           cache: 'pip' # caching pip dependencies
-      - run: pip install distlib --ignore-installed
-      - run: pip install wheel checkov pre-commit
       - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.2.8
