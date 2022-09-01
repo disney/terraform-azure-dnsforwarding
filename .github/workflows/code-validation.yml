@@ -1,0 +1,20 @@
+name: validate-code
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip' # caching pip dependencies
+      - run: pip install distlib --ignore-installed
+      - run: pip install wheel checkov pre-commit
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.2.8
+      - run: terraform init
+      - run: curl -L "$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | grep -o -E "https://.+?-linux-amd64" | head -n 1).tar.gz" > terraform-docs.tar.gz && tar -xvf terraform-docs.tar.gz && chmod +x terraform-docs && mv terraform-docs /usr/bin/
+      - run: curl -L "$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E "https://.+?_linux_amd64.zip")" > tflint.zip && unzip tflint.zip && rm tflint.zip && mv tflint /usr/bin/
+      - run: pre-commit run -a --show-diff-on-failure
