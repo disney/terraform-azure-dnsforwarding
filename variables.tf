@@ -37,24 +37,6 @@ locals {
       description                                = "Allow Inbound DNS to the VMSS"
     },
     {
-      name                                       = "deny-inbound-telnet-ftp"
-      priority                                   = 200
-      direction                                  = "Inbound"
-      access                                     = "Deny"
-      protocol                                   = "Tcp"
-      source_port_range                          = "*"
-      source_port_ranges                         = null
-      destination_port_range                     = null
-      destination_port_ranges                    = [20, 21, 23]
-      source_address_prefix                      = "*"
-      source_address_prefixes                    = null
-      destination_address_prefix                 = null
-      destination_address_prefixes               = null
-      destination_application_security_group_ids = [azurerm_application_security_group.dns_forwarding.id]
-      source_application_security_group_ids      = null
-      description                                = "Deny inbound port 20,21,23 (telnet and FTP) to vnet"
-    },
-    {
       name                                       = "allow-inbound-ssh"
       priority                                   = 4001
       direction                                  = "Inbound"
@@ -65,30 +47,12 @@ locals {
       destination_port_range                     = "22"
       destination_port_ranges                    = null
       source_address_prefix                      = null
-      source_address_prefixes                    = var.dgn_cidrs
+      source_address_prefixes                    = var.permitted_cidrs
       destination_address_prefix                 = null
       destination_address_prefixes               = null
       destination_application_security_group_ids = [azurerm_application_security_group.dns_forwarding.id]
       source_application_security_group_ids      = null
-      description                                = "Allow inbound SSH from the DGN"
-    },
-    {
-      name                                       = "deny-outbound-telnet-ftp"
-      priority                                   = 101
-      direction                                  = "Outbound"
-      access                                     = "Deny"
-      protocol                                   = "Tcp"
-      source_port_range                          = "*"
-      source_port_ranges                         = null
-      destination_port_range                     = null
-      destination_port_ranges                    = [20, 21, 23]
-      source_address_prefix                      = null
-      source_address_prefixes                    = null
-      destination_address_prefix                 = "*"
-      destination_address_prefixes               = null
-      destination_application_security_group_ids = null
-      source_application_security_group_ids      = [azurerm_application_security_group.dns_forwarding.id]
-      description                                = "Deny outbound port 20, 21 (FTP), 23 (telnet) from vnet"
+      description                                = "Allow inbound SSH"
     },
     {
       name                                       = "allow-outbound-dns"
@@ -182,8 +146,8 @@ variable "custom_nsg_rules" {
 
 variable "custom_source_image" {
   type        = bool
-  description = "Use a custom specified image for the VM's in the Scale Set, as opposed to the default image which is the latest Ubuntu 20 image from the DMI image gallery"
-  default     = false
+  description = "Use a specified image for the VM's in the Scale Set, as opposed to an image specified from an Azure Compute Gallery"
+  default     = true
 }
 
 variable "custom_tags" {
@@ -192,8 +156,8 @@ variable "custom_tags" {
   default     = {}
 }
 
-variable "dgn_cidrs" {
-  description = "List of DGN CIDR's to permit inbound to ssh into the backend VM's"
+variable "permitted_cidrs" {
+  description = "List of CIDR's to permit inbound to ssh into the backend VM's"
   type        = list(string)
   default     = ["10.0.0.0/8"]
 }
@@ -229,13 +193,13 @@ variable "grace_period_instance_repair" {
 variable "image_gallery_gallery_name" {
   type        = string
   description = "Name of image gallery where image comes from"
-  default     = "dmi"
+  default     = null
 }
 
 variable "image_gallery_image_name" {
   description = "Name of the image from the gallery"
   type        = string
-  default     = "base-dtss-ubuntu-20"
+  default     = null
 }
 
 variable "image_gallery_name" {
@@ -247,7 +211,7 @@ variable "image_gallery_name" {
 variable "image_gallery_resource_group_name" {
   description = "Name of the resource group where the image gallery resides"
   type        = string
-  default     = "dmi"
+  default     = null
 }
 
 variable "lb_front_end_ip_subnet" {
@@ -316,6 +280,12 @@ variable "resource_group_name" {
 variable "subnet_has_nat_gateway" {
   type        = bool
   description = "The subnet where this module is to be deployed already has a NAT Gateway (required for the VMSS VM's to get access to the Internet)"
+}
+
+variable "subscription_id_for_image_gallery" {
+  type        = string
+  default     = null
+  description = "The subscription ID of the subscription where the Azure Compute Gallery that stores the image you want to use for the VMSS"
 }
 
 variable "user_data_script" {

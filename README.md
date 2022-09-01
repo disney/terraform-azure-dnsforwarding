@@ -189,14 +189,14 @@ sys     0m0.274s
 |------|---------|
 | terraform | >= 1.1.3 |
 | azurerm | >= 2.94 |
-| cloudinit | >= 2.20 |
+| cloudinit | >= 2.2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | 2.94.0 |
-| cloudinit | 2.20 |
+| azurerm | 3.20.0 |
+| cloudinit | 2.2.0 |
 
 
 ## Resources
@@ -217,7 +217,7 @@ sys     0m0.274s
 | [azurerm_public_ip.dns_forwarding](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) | resource |
 | [azurerm_resource_group.dns_forwarding](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
 | [azurerm_subnet_nat_gateway_association.dns_forwarding](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_nat_gateway_association) | resource |
-| [azurerm_shared_image_version.dmi_from_gallery](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/shared_image_version) | data source |
+| [azurerm_shared_image_version.image_from_gallery](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/shared_image_version) | data source |
 
 ## Inputs
 
@@ -238,25 +238,26 @@ sys     0m0.274s
 | common\_tags | n/a | `map(string)` | ```{ "managed_by": "terraform", "project": "Azure DNS forwarding" }``` | no |
 | custom\_base\_cloudinit | Gives users of this module the option of replacing the entire defult DNS configuration, found in local.base_cloudinit, with their own config. | `string` | `null` | no |
 | custom\_nsg\_rules | Gives users of this module the option of supplying their own NSG rules. | `object` | `null` | no |
-| custom\_source\_image | Use a custom specified image for the VM's in the Scale Set, as opposed to the default image which is the latest Ubuntu 20 image from the DMI image gallery | `bool` | `false` | no |
+| custom\_source\_image | Use a specified image for the VM's in the Scale Set, as opposed to an image specified from an Azure Compute Gallery | `bool` | `true` | no |
 | custom\_tags | Map of tags you would like to have added to the common\_tags to tag all applicable resources | `map(string)` | `{}` | no |
-| dgn\_cidrs | List of DGN CIDR's to permit inbound to ssh into the backend VM's | `list(string)` | ```[ "10.0.0.0/8" ]``` | no |
 | dnssec\_enable | Configure `dnssec-enable` setting in /etc/bind/named.conf.options | `string`| `"yes"` | no |
 | dnssec\_validation | Configure `dnssec-validation` setting in /etc/bind/named.conf.options | `string` | `"yes"` | no |
 | grace\_period\_instance\_repair | Amount of time (in minutes, between 30 and 90, defaults to 30 minutes) for which automatic repairs will be delayed. The grace period starts right after the VM is found unhealthy. The time duration should be specified in ISO 8601 format. | `string` | `"PT30M"` | no |
-| image\_gallery\_gallery\_name | Name of image gallery where image comes from | `string` | `"dmi"` | no |
-| image\_gallery\_image\_name | Name of the image from the gallery | `string` | `"base-dtss-ubuntu-20"` | no |
+| image\_gallery\_gallery\_name | Name of image gallery where image comes from | `string` | `null` | no |
+| image\_gallery\_image\_name | Name of the image from the gallery | `string` | `null` | no |
 | image\_gallery\_name | Name of the image. 'latest' pulls the latest image | `string` | `"latest"` | no |
-| image\_gallery\_resource\_group\_name | Name of the resource group where the image gallery resides | `string` | `"dmi"` | no |
+| image\_gallery\_resource\_group\_name | Name of the resource group where the image gallery resides | `string` | `null` | no |
 | os\_disk\_caching | The Type of Caching which should be used for the Internal OS Disk. Possible values are None, ReadOnly and ReadWrite | `string` | `"None"` | no |
 | os\_disk\_size\_gb | The Size of the Internal OS Disk in GB, if you wish to vary from the size used in the image this Virtual Machine Scale Set is sourced from | `number` | `40` | no |
 | os\_disk\_storage\_account\_type | The Type of Storage Account which should back this the Internal OS Disk. Possible values include Standard\_LRS, StandardSSD\_LRS and Premium\_LRS | `string` | `"Standard_LRS"` | no |
+| permitted\_cidrs | List of CIDR's to permit inbound to ssh into the backend VM's | `list(string)` | ```[ "10.0.0.0/8" ]``` | no |
 | permitted\_to\_query\_dns\_forwarders | List of CIDR blocks that are permitted to query the DNS forwarders via the `allowed-query` config item in the named.conf.options file | `list(string)` | `[10.0.0.0/8]` | no |
 | public\_key | The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format. Either admin\_username & admin\_password must be used OR public\_key & public\_key\_username must be used | `string` | `null` | no |
 | public\_key\_username | The Username for which this Public SSH Key should be configured | `string` | `null` | no |
 | quantity\_of\_instances | The number of Virtual Machines in the Scale Set | `number` | `2` | no |
 | querylog | Querylog enabled in named.conf.options | `string` | `"false"` | no |
 | resource\_group\_name | n/a | `string` | `"rg-dns-forwarding"` | no |
+| subscription_id_for_image_gallery | The subscription ID of the subscription where the Azure Compute Gallery that stores the image you want to use for the VMSS | `string` | `null` | no |
 | user\_data\_script | Optional cloud-config user-data script. See https://cloudinit.readthedocs.io/en/latest/topics/format.html?highlight=shell#user-data-script for more info. | `string` | `null` | no |
 | vm\_sku | The SKU of the VM to run the DNS forwarding services | `string` | `"Standard_D2_v5"` | no |
 | vmss\_image\_offer | Must be specified if var.custom\_source\_image is true. Specifies the offer of the image used to create the virtual machines | `string` | `null` | no |

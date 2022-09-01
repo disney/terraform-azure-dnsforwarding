@@ -43,7 +43,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "dns_forwarding" {
   sku                        = var.vm_sku
   instances                  = var.quantity_of_instances
   health_probe_id            = azurerm_lb_probe.dns_forwarding.id
-  source_image_id            = var.custom_source_image == false ? data.azurerm_shared_image_version.dmi_from_gallery.id : null
+  source_image_id            = var.custom_source_image == false ? data.azurerm_shared_image_version.image_from_gallery.id : null
   encryption_at_host_enabled = var.vmss_encryption_at_host_enabled
 
   # Either admin_username & admin_password must be specified OR public_key & public_key_username must be specified
@@ -110,6 +110,15 @@ resource "azurerm_linux_virtual_machine_scale_set" "dns_forwarding" {
   tags = local.tags
 }
 
+data "azurerm_shared_image_version" "image_from_gallery" {
+  name                = var.image_gallery_name
+  image_name          = var.image_gallery_image_name
+  gallery_name        = var.image_gallery_gallery_name
+  resource_group_name = var.image_gallery_resource_group_name
+
+  provider = azurerm.image_gallery
+}
+
 data "cloudinit_config" "dns_forwarding" {
   gzip          = false
   base64_encode = true
@@ -141,15 +150,6 @@ data "cloudinit_config" "dns_forwarding" {
       content      = var.user_data_script
     }
   }
-}
-
-data "azurerm_shared_image_version" "dmi_from_gallery" {
-  name                = var.image_gallery_name
-  image_name          = var.image_gallery_image_name
-  gallery_name        = var.image_gallery_gallery_name
-  resource_group_name = var.image_gallery_resource_group_name
-
-  provider = azurerm.image_gallery
 }
 
 resource "azurerm_application_security_group" "dns_forwarding" {
