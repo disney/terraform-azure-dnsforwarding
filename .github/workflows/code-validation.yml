@@ -18,6 +18,3 @@ jobs:
       - uses: bridgecrewio/checkov-action@master
         with:
           config_file: checkov-config.yaml
-      - uses: pre-commit/action@v3.0.0
-        with:
-          extra_args: -a --show-diff-on-failure
