@@ -17,7 +17,7 @@ jobs:
       - uses: terraform-linters/setup-tflint@v2
       - uses: bridgecrewio/checkov-action@master
         with:
-          args: --config-file checkov-config.yaml
+          args: --config-file /checkov-config.yaml
       - uses: pre-commit/action@v3.0.0
         with:
           extra_args: -a --show-diff-on-failure
