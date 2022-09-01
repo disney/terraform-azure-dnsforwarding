@@ -1,0 +1,4 @@
+skip-check:
+  - CKV_AZURE_49 # If a user chooses to use SSH auth to their VMSS VM's, this will pass
+  - CKV_AZURE_97 # this feature must be enabled at the subscription level
+  - CKV_AZURE_149 # It's up to the end user whether to use password auth for VM's
